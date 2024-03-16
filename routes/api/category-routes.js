@@ -57,7 +57,7 @@ router.post("/", async (req, res) => {
 });
 
 router.put("/:id", async (req, res) => {
-  // Updated a category by its `id` value
+  // Update a category by its `id` value
   const { category_name } = req.body;
 
   if (!category_name)
@@ -78,8 +78,21 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", (req, res) => {
-  // delete a category by its `id` value
+router.delete("/:id", async (req, res) => {
+  // Able to delete a category by its `id` value
+  try {
+    const delCategory = await Category.destroy({
+      where: { id: req.params.id },
+    });
+
+    if (delCategory === 0) {
+      res.status(200).json({ message: `No category found to delete!` });
+      return;
+    }
+    res.status(200).json(delCategory);
+  } catch (error) {
+    res.status(400).json(error);
+  }
 });
 
 module.exports = router;
