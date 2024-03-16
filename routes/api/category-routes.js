@@ -6,31 +6,54 @@ const { Category, Product } = require("../../models");
 router.get("/", async (req, res) => {
   // This will get all the products
   try {
-    const allProducts = await Product.findAll({
-      include: [{ model: Category }, { model: Tag }],
+    const allCategoryData = await Category.findAll({
+      include: [{ model: Product }, { model: Tag }],
     });
-    res.status(200).json(allProducts);
+    if (!allCategoryData) {
+      res.status(400).json({ message: `No category found` });
+      return;
+    }
+    res.status(200).json(allCategoryData);
   } catch (error) {
-    res.status(400).json(error);
+    res.status(400).json(err);
   }
   // be sure to include its associated Category and Tag data
 });
 
 // This will get one product by its 'id'
-router.get("/:id", async (async, res) => {
+router.get("/:id", async (req, res) => {
   try {
-    const foundProduct = await Product.findOne({
-      include: [{ model: Category }, { model: Tag }],
-      where: { id: req.params.id },
+    const catData = await Category.findOne({
+      where: {
+        id: req.params.id,
+      },
+      include: [{ model: Product }],
     });
-    res.status(200).json(foundProduct);
+    if (!catData) {
+      res.status(400).json({ message: `No Category found` });
+      return;
+    }
+    res.status(200).json(catData);
+    return;
   } catch (error) {
     res.status(400).json(error);
   }
 });
 
-router.post("/", (req, res) => {
-  // create a new category
+router.post("/", async (req, res) => {
+  // New category will be created
+  const { category_name } = req.body;
+  if (!category_name)
+    return res.status(400).json({ message: `No category_name sent` });
+  try {
+    const createCategory = await Category.create({
+      category_name: category_name,
+    });
+
+    res.status(200).json(createCategory);
+  } catch (error) {
+    res.status(400).json(error);
+  }
 });
 
 router.put("/:id", (req, res) => {
